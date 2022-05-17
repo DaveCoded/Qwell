@@ -9,3 +9,35 @@ datasource db {
     provider = "postgresql"
     url      = env("DATABASE_URL")
 }
+
+enum Mode {
+    WRITING
+    REVISING
+}
+
+// TODO: add user/account models for auth
+
+model Project {
+    id           Int        @id @default(autoincrement())
+    // TODO: add userId for auth
+    name         String // unique?
+    description  String?
+    currentCycle Int
+    currentMode  Mode
+    createdAt    DateTime   @default(now())
+    updatedAt    DateTime   @updatedAt
+    Document     Document[]
+    // TODO: add a @@unique constraint on name such that the same user cannot have two projects with the same name.
+    // https://stackoverflow.com/questions/67226972/prisma-how-to-define-compound-unique-constraint-with-fields-in-multiple-models#:~:text=You%20probably%20want,name%5D%2C%20name%3A%20%22courseIdentifier%22)%0A%7D
+}
+
+model Document {
+    id        Int      @id @default(autoincrement())
+    content   String
+    cycle     Int
+    mode      Mode
+    project   Project  @relation(fields: [projectId], references: [id])
+    projectId Int
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
